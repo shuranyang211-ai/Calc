@@ -218,6 +218,104 @@ tbody tr:hover td{background:#fbfdff}
   .formula-row{grid-template-columns:1fr;gap:2px}
 }
 
+
+.syncbar{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:11px 13px;margin:-4px 0 16px;box-shadow:0 4px 14px rgba(15,23,42,.035);
+}
+.syncinfo{min-width:0}
+.synctitle{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#334155}
+.syncdesc{font-size:11px;color:var(--muted);margin-top:3px;white-space:normal}
+.syncdot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px #dcfce7;flex:none}
+.clear-btn{color:#b42318!important;border-color:#fecaca!important;background:#fffafa!important;white-space:nowrap}
+.clear-btn:hover{background:#fff1f2!important;border-color:#fda4af!important}
+.syncflash{animation:syncFlash .45s ease}
+@keyframes syncFlash{0%{background:#eff6ff}100%{background:#fff}}
+@media(max-width:620px){
+  .syncbar{align-items:flex-start;flex-direction:column}
+  .clear-btn{width:100%;min-height:42px}
+}
+
+
+.keymetric{
+  position:relative;
+  border-width:2px!important;
+  background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)!important;
+}
+.keymetric.primary{
+  border-color:#93c5fd!important;
+  background:linear-gradient(180deg,#eff6ff 0%,#ffffff 100%)!important;
+}
+.keymetric.good{
+  border-color:#86efac!important;
+  background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%)!important;
+}
+.keymetric.warn{
+  border-color:#fdba74!important;
+  background:linear-gradient(180deg,#fff7ed 0%,#ffffff 100%)!important;
+}
+.keymetric.bad{
+  border-color:#fda4af!important;
+  background:linear-gradient(180deg,#fff1f2 0%,#ffffff 100%)!important;
+}
+.keymetric .name{
+  font-weight:800!important;
+  color:#334155!important;
+}
+.keymetric .val{
+  font-size:20px!important;
+  font-weight:900!important;
+}
+.keymetric::after{
+  content:"重点";
+  position:absolute;
+  right:9px;
+  top:8px;
+  font-size:9px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:.04em;
+  color:#64748b;
+  background:#f1f5f9;
+  border-radius:999px;
+  padding:4px 6px;
+}
+.keymetric.primary::after{color:#1d4ed8;background:#dbeafe}
+.keymetric.good::after{color:#15803d;background:#dcfce7}
+.keymetric.warn::after{color:#b45309;background:#ffedd5}
+.keymetric.bad::after{color:#be123c;background:#ffe4e6}
+.metric-section-label{
+  display:flex;align-items:center;gap:7px;
+  font-size:11px;font-weight:800;color:#64748b;
+  margin:4px 0 10px;
+}
+.metric-section-label::before{
+  content:"";width:7px;height:7px;border-radius:50%;background:#2563eb;
+}
+
+
+.export-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.export-actions .btn{min-height:38px}
+@media(max-width:720px){
+  .export-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}
+  .export-actions .clear-btn{grid-column:1/-1}
+}
+@media print{
+  body{background:#fff!important}
+  .shell{max-width:none;padding:0}
+  .header{margin-bottom:12px}
+  .tabs,.syncbar,.toolbar,.btn,.live-dot{display:none!important}
+  .page{display:block!important}
+  .page + .page{margin-top:24px;page-break-before:always}
+  .card{box-shadow:none!important;break-inside:avoid}
+  .tablebox{overflow:visible!important}
+  table{min-width:0!important;font-size:10px}
+  .inputwrap{border:0!important}
+  .inputwrap input{padding:2px 0!important}
+  .unit{border:0!important}
+}
+
 </style>
 </head>
 <body>
@@ -225,14 +323,26 @@ tbody tr:hover td{background:#fbfdff}
   <div class="header">
     <div>
       <h1>Amazon 运营与选品计算器</h1>
-      <div class="sub">利润测算 · 备货规划 · 选品评估，一页完成</div>
+      <div class="sub">新品压力测试 · 实际运营利润 · 备货与现金流</div>
     </div>
     <div class="top-badge">实时计算</div>
   </div>
 
   <div class="tabs">
-    <button class="tab active" data-page="ops">运营计算</button>
-    <button class="tab" data-page="select">选品测算</button>
+    <button class="tab active" data-page="ops">实际运营利润模型</button>
+    <button class="tab" data-page="select">新品压力测试利润</button>
+  </div>
+
+  <div class="syncbar">
+    <div class="syncinfo">
+      <div class="synctitle"><span class="syncdot"></span>产品基础数据双向同步</div>
+      <div class="syncdesc">售价 · 采购 · 头程 · FBA · 佣金 · CPC/PPC · 转化率 · 汇率</div>
+    </div>
+    <div class="export-actions">
+      <button class="btn" id="exportCsv" type="button">导出 Excel / CSV</button>
+      <button class="btn" id="printReport" type="button">打印 / 保存 PDF</button>
+      <button class="btn clear-btn" id="clearProductData" type="button">一键清空基础数据</button>
+    </div>
   </div>
 
   <section id="ops" class="page active">
@@ -244,10 +354,10 @@ tbody tr:hover td{background:#fbfdff}
     <div id="fbaPanel">
       <div class="grid">
         <div class="card input-card">
-          <div class="section-head"><div><div class="eyebrow">运营测算</div><h2>基础参数</h2></div><button class="btn ghost" id="fbaReset">恢复默认</button></div>
+          <div class="section-head"><div><div class="eyebrow">实际运营</div><h2>基础参数</h2></div><button class="btn ghost" id="fbaReset">恢复默认</button></div>
           <div class="fields" id="fbaFields"></div>
           
-<div class="note"><strong>怎么理解：</strong>这一组参数主要判断“卖一单能不能赚钱、广告放大后还能不能赚钱”。修改任意参数，右侧结果会实时更新。</div>
+<div class="note"><strong>怎么理解：</strong>这是实际运营利润模型，应该填正在跑的真实数据：真实售价、真实CPC、真实转化率、真实自然流量和真实广告预算。目标不是做保守假设，而是看“每单真实剩多少、每天真实剩多少、当前广告和自然流量组合是否已经盈利”。</div><div class="note"><strong>数据同步：</strong>售价、采购、头程、FBA、佣金、CPC、转化率和汇率会自动同步到“新品压力测试利润”页面；在选品页修改也会同步回来。</div>
 <div class="explain-block">
   <div class="explain-title">参数说明</div>
   <div class="help-grid">
@@ -279,6 +389,7 @@ tbody tr:hover td{background:#fbfdff}
         <div class="formula-row"><div class="f-name">预计出单</div><div class="f-desc">（广告点击 + 自然流量）× 转化率。用于估算广告放量后的订单规模。</div></div>
         <div class="formula-row"><div class="f-name">日利润</div><div class="f-desc">单件利润 × 预计订单 − 日广告预算。这个指标比只看单件毛利更适合判断新品能不能推广。</div></div>
         <div class="formula-row"><div class="f-name">ACOS</div><div class="f-desc">广告花费 ÷ 广告带来的销售额。越低越好，但新品初期可以接受更高ACOS换排名和数据积累。</div></div>
+        <div class="formula-row"><div class="f-name">自然流量盈亏平衡点</div><div class="f-desc">表示在当前售价、单件利润、CPC、转化率和广告预算不变时，每天至少需要多少自然访问，才能让“日利润=0”。近似公式：自然流量盈亏平衡点 = 日广告预算 ÷（单件利润 × 转化率） − 广告点击。结果越低越安全；如果结果为0，说明广告流量本身已经能覆盖成本；如果显示“无法保本”，说明单件利润≤0或转化率为0，单纯增加自然流量也解决不了问题。</div></div>
         <div class="formula-row"><div class="f-name">扣广告后投产比</div><div class="f-desc">（预计日利润 × 汇率）÷ 当日售出商品的采购+头程成本。这里的“日利润”已经扣除了当天广告费，所以它表示：每投入 1 元商品采购与头程成本，在扣掉广告之后还能产生多少元利润。比如结果为 0.50，代表每 1 元货物成本约产生 0.50 元净经营利润；为 1.00，代表利润约等于货物成本；小于 0 表示广告后整体亏损。它不是广告 ROAS，也不是 ACOS。</div></div>
       </div>
     </div>
@@ -286,6 +397,7 @@ tbody tr:hover td{background:#fbfdff}
       </div>
       <div class="card" style="margin-top:16px">
         <h3>明细结果</h3>
+        <div class="metric-section-label">带“重点”标识的是主要决策指标</div>
         <div class="grid3" id="fbaDetail"></div>
         <div class="note"><strong>扣广告后投产比怎么看：</strong>它衡量的是“货物资金”的赚钱效率，已经把广告费扣掉。0.50 表示每投入 ¥1 的采购+头程成本，预计还能赚约 ¥0.50；1.00 表示约赚 ¥1；低于 0 说明广告后整体亏损。这个指标不要和 ROAS、ACOS 混淆。</div>
       </div>
@@ -331,12 +443,13 @@ tbody tr:hover td{background:#fbfdff}
   <section id="select" class="page">
     <div class="grid">
       <div class="card input-card">
-        <div class="section-head"><div><div class="eyebrow">选品测算</div><h2>成本与转化参数</h2></div><button class="btn ghost" id="selReset">恢复默认</button></div>
+        <div class="section-head"><div><div class="eyebrow">新品压力测试利润</div><h2>成本与转化参数</h2></div><button class="btn ghost" id="selReset">恢复默认</button></div>
         <div class="fields" id="selFields"></div>
         <div class="hr"></div>
         <div class="fields" id="selAdvanced"></div>
         
-<div class="note"><strong>怎么理解：</strong>这里用于新品选品阶段快速判断“这个产品有没有足够利润空间去跑广告、承受退货和价格竞争”。</div>
+<div class="note"><strong>怎么理解：</strong>这里用于新品上架前做保守压力测试，判断在广告、退货、佣金、FBA、采购和头程都计入后，这个产品还能不能扛住冷启动。</div>
+<div class="note"><strong>压力测试的原则：</strong>这里不按稳定期的理想广告费率来算，而是把新品冷启动阶段看得更保守。PPC和转化率应按较差情况填写，用来判断这个新品在初期广告偏贵、转化偏低、退货存在时是否仍有生存空间。</div><div class="note"><strong>数据同步：</strong>这里的售价、采购、头程、FBA、佣金、PPC、转化率和汇率与“实际运营利润模型”页面共用同一组产品数据。</div>
 <div class="explain-block">
   <div class="explain-title">关键参数说明</div>
   <div class="help-grid">
@@ -350,7 +463,7 @@ tbody tr:hover td{background:#fbfdff}
 </div>
       </div>
       <div class="card result-card">
-        <div class="section-head"><div><div class="eyebrow">结果概览</div><h2>选品结果</h2></div><span class="live-dot">自动更新</span></div>
+        <div class="section-head"><div><div class="eyebrow">结果概览</div><h2>压力测试结果</h2></div><span class="live-dot">自动更新</span></div>
         <div class="kpis" id="selKpis"></div>
         <div class="callout" id="selAdvice" style="margin-top:12px"></div>
     <div id="selVerdict"></div>
@@ -388,9 +501,18 @@ function mountFields(container, defs, state, onChange){
     const wrap=document.createElement('div'); wrap.className='field';
     const label=document.createElement('label'); label.textContent=d.label;
     const iw=document.createElement('div'); iw.className='inputwrap';
-    const inp=document.createElement('input'); inp.type='number'; inp.step=d.step||'any'; inp.min=d.min??0; inp.value=state[d.key];
+    const inp=document.createElement('input');
+    inp.type='number';
+    inp.step=d.step||'any';
+    inp.min=d.min??0;
+    inp.value=state[d.key];
+    inp.dataset.key=d.key;
     const unit=document.createElement('span'); unit.className='unit'; unit.textContent=d.unit||'';
-    inp.addEventListener('input',()=>{state[d.key]=clampNum(inp.value,d.min??0);onChange()});
+    inp.addEventListener('input',()=>{
+      state[d.key]=clampNum(inp.value,d.min??0);
+      syncSharedField(state,d.key,state[d.key]);
+      onChange();
+    });
     iw.append(inp,unit); wrap.append(label,iw); container.append(wrap);
   });
 }
@@ -398,7 +520,72 @@ function setKpis(el, items){
   el.innerHTML=items.map(x=>`<div class="kpi ${x.cls||''}"><div class="name">${x.name}</div><div class="val">${x.value}</div></div>`).join('');
 }
 function detailCards(el, items){
-  el.innerHTML=items.map(x=>`<div class="kpi"><div class="name">${x.name}</div><div class="val" style="font-size:17px">${x.value}</div></div>`).join('');
+  el.innerHTML=items.map(x=>{
+    const cls=['kpi'];
+    if(x.key) cls.push('keymetric');
+    if(x.tone) cls.push(x.tone);
+    return `<div class="${cls.join(' ')}"><div class="name">${x.name}</div><div class="val" style="font-size:17px">${x.value}</div></div>`;
+  }).join('');
+}
+
+const sharedPairs=[
+  ['purchase','purchase'],
+  ['freight','freight'],
+  ['commission','commission'],
+  ['fba','fba'],
+  ['price','price'],
+  ['conversion','conversion'],
+  ['exchange','exchange'],
+  ['cpc','ppc']
+];
+
+function updateInputValue(containerSelector,key,value){
+  const el=document.querySelector(`${containerSelector} input[data-key="${key}"]`);
+  if(el && document.activeElement!==el){
+    el.value=value;
+    const wrap=el.closest('.inputwrap');
+    if(wrap){
+      wrap.classList.remove('syncflash');
+      void wrap.offsetWidth;
+      wrap.classList.add('syncflash');
+    }
+  }
+}
+
+function syncSharedField(sourceState,key,value){
+  // fba / sel are declared later; this function only executes after page initialization.
+  if(typeof fba==='undefined' || typeof sel==='undefined') return;
+
+  if(sourceState===fba){
+    const pair=sharedPairs.find(p=>p[0]===key);
+    if(!pair) return;
+    sel[pair[1]]=value;
+    const targetContainer=['exchange','commission'].includes(pair[1]) ? '#selAdvanced' : '#selFields';
+    updateInputValue(targetContainer,pair[1],value);
+    if(typeof calcSel==='function') calcSel();
+  }else if(sourceState===sel){
+    const pair=sharedPairs.find(p=>p[1]===key);
+    if(!pair) return;
+    fba[pair[0]]=value;
+    updateInputValue('#fbaFields',pair[0],value);
+    if(typeof calcFba==='function') calcFba();
+  }
+}
+
+function syncAllFromFba(){
+  sharedPairs.forEach(([fk,sk])=>{ sel[sk]=fba[fk]; });
+}
+
+function syncAllFromSel(){
+  sharedPairs.forEach(([fk,sk])=>{ fba[fk]=sel[sk]; });
+}
+
+function refreshProductInputs(){
+  mountFields($('#fbaFields'),fbaDefs,fba,calcFba);
+  mountFields($('#selFields'),selDefs,sel,calcSel);
+  mountFields($('#selAdvanced'),selAdv,sel,calcSel);
+  calcFba();
+  calcSel();
 }
 
 $$('.tab').forEach(b=>b.addEventListener('click',()=>{
@@ -438,15 +625,26 @@ function calcFba(){
   const noAdRoi=((x.purchase+x.freight)*orders)>0?dailyProfit*x.exchange/((x.purchase+x.freight)*orders):0;
   const clickPerOrder=cv>0?1/cv:0;
 
+  // Natural traffic break-even point:
+  // dailyProfit = actualProfit * (adClicks + naturalTraffic) * conversion - adBudget = 0
+  // naturalTraffic* = adBudget/(actualProfit*conversion) - adClicks
+  // If actualProfit <= 0 or conversion <= 0, no amount of natural traffic can make this operating model profitable.
+  let naturalBreakEven=null;
+  if(actualProfit>0 && cv>0){
+    naturalBreakEven=Math.max(0, x.adBudget/(actualProfit*cv)-adClicks);
+  }
+
   setKpis($('#fbaKpis'),[
-    {name:'最低售价',value:'$ '+fmt(minPrice),cls:discounted>=minPrice?'good':'bad'},
-    {name:'实际单件利润',value:'$ '+fmt(actualProfit),cls:actualProfit>=0?'good':'bad'},
-    {name:'日利润',value:'$ '+fmt(dailyProfit),cls:dailyProfit>=0?'good':'bad'},
-    {name:'月利润',value:'¥ '+fmt(monthCNY),cls:monthCNY>=0?'good':'bad'}
+    {name:'最低售价',value:'$ '+fmt(minPrice),cls:'keymetric '+(discounted>=minPrice?'good':'bad')},
+    {name:'实际单件利润',value:'$ '+fmt(actualProfit),cls:'keymetric '+(actualProfit>=0?'good':'bad')},
+    {name:'日利润',value:'$ '+fmt(dailyProfit),cls:'keymetric '+(dailyProfit>=0?'good':'bad')},
+    {name:'月利润',value:'¥ '+fmt(monthCNY),cls:'keymetric '+(monthCNY>=0?'good':'bad')}
   ]);
   detailCards($('#fbaDetail'),[
     {name:'折后价格',value:'$ '+fmt(discounted)}, {name:'广告点击',value:fmt(adClicks,1)+' 次'},
-    {name:'总流量',value:fmt(totalTraffic,1)+' 次'}, {name:'预计日出单',value:fmt(orders,2)+' 单'},
+    {name:'总流量',value:fmt(totalTraffic,1)+' 次'},
+    {name:'自然流量盈亏平衡点',value:naturalBreakEven===null?'无法保本':fmt(naturalBreakEven,1)+' 次/天',key:true,tone:naturalBreakEven===null?'bad':(x.natural>=naturalBreakEven?'good':'warn')},
+    {name:'预计日出单',value:fmt(orders,2)+' 单'},
     {name:'每单需点击',value:fmt(clickPerOrder,1)+' 次'}, {name:'销售回款/单',value:'$ '+fmt(remit)},
     {name:'实际成本/单',value:'$ '+fmt(actualCost)}, {name:'投产比',value:pct(roi,1)},
     {name:'ACOS',value:pct(acos,1)}, {name:'扣广告后投产比',value:fmt(noAdRoi,2)},
@@ -457,6 +655,14 @@ function calcFba(){
   else if(dailyProfit<0) msg='单件有利润，但按当前广告预算和预计出单量，日利润仍为负。重点检查 CPC、转化率和广告预算。';
   else if(acos>25) msg='当前模型可盈利，但 ACOS 偏高，建议优先提高转化率或降低 CPC，避免利润被广告快速吃掉。';
   else msg='当前结构为正向盈利。可以继续做售价、转化率、CPC 的敏感性测试，判断最安全的放量区间。';
+
+  if(naturalBreakEven===null){
+    msg += ' 当前单件利润或转化率不足，自然流量再高也无法从根本上解决亏损。';
+  }else if(x.natural < naturalBreakEven){
+    msg += ` 当前自然流量约 ${fmt(x.natural,1)} 次/天，低于盈亏平衡点 ${fmt(naturalBreakEven,1)} 次/天，还需要约 ${fmt(naturalBreakEven-x.natural,1)} 次/天自然流量才能覆盖当前广告投入。`;
+  }else{
+    msg += ` 当前自然流量约 ${fmt(x.natural,1)} 次/天，已达到盈亏平衡点 ${fmt(naturalBreakEven,1)} 次/天。`;
+  }
   $('#fbaAdvice').textContent=msg;
 
   let score=50;
@@ -591,10 +797,10 @@ function calcSel(){
   const gross=s.price-total;
   const margin=s.price>0?gross/s.price*100:0;
   setKpis($('#selKpis'),[
-    {name:'参考总成本',value:'$ '+fmt(total),cls:gross>=0?'':'bad'},
-    {name:'参考毛利',value:'$ '+fmt(gross),cls:gross>=0?'good':'bad'},
-    {name:'毛利润率',value:pct(margin,1),cls:margin>=20?'good':margin<0?'bad':''},
-    {name:'广告获客成本',value:'$ '+fmt(ads),cls:''}
+    {name:'参考总成本',value:'$ '+fmt(total),cls:'keymetric primary'},
+    {name:'参考毛利',value:'$ '+fmt(gross),cls:'keymetric '+(gross>=0?'good':'bad')},
+    {name:'毛利润率',value:pct(margin,1),cls:'keymetric '+(margin>=20?'good':margin>=10?'warn':'bad')},
+    {name:'广告获客成本',value:'$ '+fmt(ads),cls:'keymetric '+((ads/s.price)<=0.25?'good':(ads/s.price)<=0.4?'warn':'bad')}
   ]);
   const parts=[
     ['采购+头程','(采购+头程) ÷ 汇率',sourcing],
@@ -634,27 +840,158 @@ function calcSel(){
   if(!risks.length) risks.push('基础利润模型较健康');
 
   $('#selVerdict').innerHTML=`<div class="verdict ${vcls}">
-    <div class="v-title">${title} · 选品评分 ${score}/100</div>
+    <div class="v-title">${title} · 压力测试评分 ${score}/100</div>
     <div class="scorebar"><span style="width:${score}%"></span></div>
-    <div class="v-body">${score>=75?'从利润模型看，这个新品具备进入推广测试的条件。下一步还要继续检查竞争强度、专利/侵权、Review壁垒和类目退货率。':score>=50?'可以进入小规模验证，但模型安全垫一般。建议先优化成本或提高预期转化率，再考虑扩大广告。':'当前利润模型不足以支撑稳定推广。即使上架，也更适合先优化产品成本、定价或差异化，而不是直接烧广告。'}</div>
+    <div class="v-body">${score>=75?'从压力测试结果看，这个新品具备进入推广测试的条件。下一步还要继续检查竞争强度、专利/侵权、Review壁垒和类目退货率。':score>=50?'可以进入小规模验证，但模型安全垫一般。建议先优化成本或提高预期转化率，再考虑扩大广告。':'当前压力测试结果不足以支撑稳定推广。即使上架，也更适合先优化产品成本、定价或差异化，而不是直接烧广告。'}</div>
     <div class="tagrow">${risks.map(r=>`<span class="tag">${r}</span>`).join('')}</div>
   </div>`;
 }
-mountFields($('#selFields'),selDefs,sel,calcSel); mountFields($('#selAdvanced'),selAdv,sel,calcSel); calcSel();
+syncAllFromFba(); mountFields($('#selFields'),selDefs,sel,calcSel); mountFields($('#selAdvanced'),selAdv,sel,calcSel); calcSel();
 
 const fbaDefaults={purchase:47, freight:30, commission:15, fba:7.55, adBudget:10, cpc:.43, natural:10, conversion:6, price:43.99, discount:0, exchange:6.7};
-const selDefaults={price:33,purchase:43,freight:10,fba:5,ppc:.8,returnRate:10,conversion:6,exchange:7,commission:15,returnFactor:88};
+const selDefaults={price:43.99,purchase:47,freight:30,fba:7.55,ppc:.43,returnRate:10,conversion:6,exchange:6.7,commission:15,returnFactor:88};
 
 $('#fbaReset')?.addEventListener('click',()=>{
   Object.assign(fba,fbaDefaults);
-  mountFields($('#fbaFields'),fbaDefs,fba,calcFba);
-  calcFba();
+  syncAllFromFba();
+  refreshProductInputs();
 });
 $('#selReset')?.addEventListener('click',()=>{
   Object.assign(sel,selDefaults);
-  mountFields($('#selFields'),selDefs,sel,calcSel);
-  mountFields($('#selAdvanced'),selAdv,sel,calcSel);
-  calcSel();
+  syncAllFromSel();
+  refreshProductInputs();
+});
+
+$('#clearProductData')?.addEventListener('click',()=>{
+  // Only clear product-level shared data. Scenario assumptions remain independent.
+  const zeroFba={purchase:0,freight:0,commission:0,fba:0,price:0,conversion:0,exchange:0,cpc:0};
+  Object.assign(fba,zeroFba);
+  syncAllFromFba();
+  refreshProductInputs();
+
+  const btn=$('#clearProductData');
+  const old=btn.textContent;
+  btn.textContent='已清空';
+  setTimeout(()=>{btn.textContent=old;},900);
+});
+
+
+function csvEscape(value){
+  const s=String(value ?? '');
+  return `"${s.replace(/"/g,'""')}"`;
+}
+function downloadTextFile(filename, text, mime='text/csv;charset=utf-8'){
+  const blob=new Blob(['\ufeff'+text],{type:mime});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function exportFullReport(){
+  const x=fba;
+  const cv=x.conversion/100, com=x.commission/100, dis=x.discount/100;
+  const adClicks=x.cpc>0?x.adBudget/x.cpc:0;
+  const totalTraffic=x.natural+adClicks;
+  const orders=Math.round(totalTraffic)*cv;
+  const discounted=x.price*(1-dis);
+  const cnyCostUSD=x.exchange>0?(x.purchase+x.freight)/x.exchange:0;
+  const minPrice=(1-com)>0?(cnyCostUSD+x.fba)/(1-com):0;
+  const actualProfit=discounted-discounted*com-x.fba-cnyCostUSD;
+  const remit=discounted-discounted*com-x.fba;
+  const actualCost=discounted-actualProfit;
+  const roi=(x.purchase+x.freight)>0?actualProfit*x.exchange/(x.purchase+x.freight)*100:0;
+  const dailyProfit=actualProfit*orders-x.adBudget;
+  const dailyCNY=dailyProfit*x.exchange;
+  const monthUSD=dailyProfit*30;
+  const monthCNY=dailyCNY*30;
+  const acos=(discounted*orders)>0?x.adBudget/(discounted*orders)*100:0;
+  const afterAdRoi=((x.purchase+x.freight)*orders)>0?dailyProfit*x.exchange/((x.purchase+x.freight)*orders):0;
+  const naturalBE=(actualProfit>0&&cv>0)?Math.max(0,x.adBudget/(actualProfit*cv)-adClicks):null;
+
+  const s=sel, scv=s.conversion/100, rr=s.returnRate/100, rf=s.returnFactor/100, scom=s.commission/100;
+  const commission=Math.round(s.price*scom*100)/100;
+  const sourcing=s.exchange>0?(s.purchase+s.freight)/s.exchange:0;
+  const ads=scv>0?s.ppc/scv:0;
+  const returns=s.price*rr*rf;
+  const total=Math.round((sourcing+s.fba+commission+ads+returns)*100)/100;
+  const gross=s.price-total;
+  const margin=s.price>0?gross/s.price*100:0;
+
+  const rows=[];
+  const section=t=>rows.push([t,'','','']);
+  const line=(name,value,unit='',note='')=>rows.push([name,value,unit,note]);
+
+  section('【产品基础数据】');
+  line('售价',x.price,'USD');
+  line('采购成本',x.purchase,'CNY');
+  line('头程成本',x.freight,'CNY');
+  line('FBA配送费',x.fba,'USD');
+  line('佣金率',x.commission,'%');
+  line('CPC / PPC',x.cpc,'USD');
+  line('转化率',x.conversion,'%');
+  line('汇率',x.exchange,'');
+
+  rows.push([]);
+  section('【实际运营利润模型】');
+  line('日广告预算',x.adBudget,'USD');
+  line('日自然流量',x.natural,'次/天');
+  line('优惠折扣',x.discount,'%');
+  line('折后售价',discounted.toFixed(2),'USD');
+  line('最低售价',minPrice.toFixed(2),'USD');
+  line('实际单件利润',actualProfit.toFixed(2),'USD');
+  line('广告点击',adClicks.toFixed(1),'次/天');
+  line('总流量',totalTraffic.toFixed(1),'次/天');
+  line('预计日出单',orders.toFixed(2),'单/天');
+  line('自然流量盈亏平衡点',naturalBE===null?'无法保本':naturalBE.toFixed(1),'次/天','当前广告预算、CPC和转化率下达到日利润0所需自然流量');
+  line('销售回款/单',remit.toFixed(2),'USD');
+  line('实际成本/单',actualCost.toFixed(2),'USD');
+  line('投产比',roi.toFixed(1),'%');
+  line('ACOS',acos.toFixed(1),'%');
+  line('扣广告后投产比',afterAdRoi.toFixed(2),'');
+  line('日利润',dailyProfit.toFixed(2),'USD');
+  line('日利润人民币',dailyCNY.toFixed(2),'CNY');
+  line('月利润',monthUSD.toFixed(2),'USD');
+  line('月利润人民币',monthCNY.toFixed(2),'CNY');
+
+  rows.push([]);
+  section('【新品压力测试利润】');
+  line('退货率',s.returnRate,'%');
+  line('退货损耗系数',s.returnFactor,'%');
+  line('采购+头程折算',sourcing.toFixed(2),'USD');
+  line('佣金',commission.toFixed(2),'USD');
+  line('广告获客成本',ads.toFixed(2),'USD');
+  line('退货损耗',returns.toFixed(2),'USD');
+  line('参考总成本',total.toFixed(2),'USD');
+  line('参考毛利',gross.toFixed(2),'USD');
+  line('毛利润率',margin.toFixed(1),'%');
+
+  rows.push([]);
+  section('【回款与备货规划】');
+  rows.push(['轮次','备货数量','备货成本(CNY)','备货后现金(CNY)','单件回款(USD)','总广告(USD)','销售利润(USD)','实际回款(USD)','批次盈利(CNY)','Amazon余额(USD)']);
+  document.querySelectorAll('#cashRows tr').forEach(tr=>{
+    rows.push([...tr.querySelectorAll('td')].map(td=>td.textContent.trim()));
+  });
+
+  const csv=rows.map(r=>r.map(csvEscape).join(',')).join('\r\n');
+  const now=new Date();
+  const stamp=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  downloadTextFile(`Amazon利润测算报告_${stamp}.csv`,csv);
+}
+
+$('#exportCsv')?.addEventListener('click',()=>{
+  exportFullReport();
+  const btn=$('#exportCsv');
+  const old=btn.textContent;
+  btn.textContent='已导出';
+  setTimeout(()=>btn.textContent=old,1000);
+});
+
+$('#printReport')?.addEventListener('click',()=>{
+  window.print();
 });
 
 </script>
